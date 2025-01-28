@@ -4,11 +4,28 @@ from lightnovel_manager import LightNovelManager
 import traceback
 import sys
 import json
+from datetime import datetime
+import builtins
 
 DEBUG = True
 
+LOG_FILE = "data/log.txt"
+
+# 重定义全局的 print 函数
+original_print = print
+
+def custom_print(*args, **kwargs):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    original_print( *args, **kwargs)
+    with open(LOG_FILE, "a+", encoding="utf-8") as file:
+        original_print(f"[{timestamp}]", *args, file=file, **kwargs)
+
+# 替换 builtins.print
+builtins.print = custom_print
+
 def main():
     try:
+        print('--- LOG START ---')
         # 读取 JSON 文件
         with open("data/config.json", "r") as file:
             config = json.load(file)
@@ -46,12 +63,11 @@ def main():
         # 关闭驱动
         driver_manager.teardown(lightnovel_driver)
         driver_manager.teardown(autodl_driver)
+        print('--- LOG END ---')
 
     except Exception as e:
         if DEBUG:
-            print("\n--- 错误详情 ---")
             traceback.print_exc()
-            print("---------------\n")
         else:
             print(f"错误: {str(e)}")
 
@@ -60,12 +76,13 @@ def main():
             autodl_manager.shutdown_server()
         except Exception:
             if DEBUG:
-                print("\n--- 服务器关机错误详情 ---")
                 traceback.print_exc()
-                print("---------------\n")
             else:
-                pass
+                print("\n⚠服务器关机错误! ")
+        
+        print('--- LOG END ---')
         sys.exit()
 
 if __name__ == "__main__":
     main()
+    
