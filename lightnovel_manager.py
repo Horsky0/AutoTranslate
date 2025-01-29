@@ -28,7 +28,7 @@ class LightNovelManager:
             self.driver.get("https://books.fishhawk.top/favorite/web")
             time.sleep(2)
             if self.driver.find_element(By.CLASS_NAME, "n-list-item").is_displayed():
-                print("LightNovel: 恢复登录状态成功!")
+                print("LightNovel: 恢复登录状态成功")
                 return
         except Exception:
             print("LightNovel: 恢复登录状态失败, 正在重新登录...")
@@ -75,7 +75,9 @@ class LightNovelManager:
 
         if not self.translate_list:
             print("没有需要翻译的书目！")
-            sys.exit()
+            return 'Exit'
+        else:
+            return 'Continue'
 
     def translate_books(self):
         """

@@ -61,7 +61,7 @@ class AutoDLManager:
         self.driver.get("https://www.autodl.com/console/instance/list")
         DriverManager.save_cookies_and_token(self.driver, self.cookies_path)
 
-    def _check_balance(self):
+    def check_balance(self):
         """
         检查 AutoDL 账户余额
         """
@@ -70,17 +70,14 @@ class AutoDLManager:
         balance_element = self.driver.find_element(By.CLASS_NAME, "num-bold")
         balance = float(balance_element.text)
         print(f"当前账户余额: ￥{balance}")
-        return balance
+        
+        if balance < self.min_balance:
+            raise ValueError(f"余额不足（小于￥{self.min_balance}），无法启动服务器")
     
     def start_server(self):
         """
         启动 AutoDL 服务器
         """
-        balance = self._check_balance()
-        if balance < self.min_balance:
-            print(f"余额不足（小于￥{self.min_balance}），无法启动服务器")
-            sys.exit()
-        
         self.driver.get("https://www.autodl.com/console/instance/list")
         gpu_status = self.driver.find_elements(By.CLASS_NAME, "gpuTips")
         boot_buttons = self.driver.find_elements(
