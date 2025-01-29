@@ -1,25 +1,24 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from sshtunnel import SSHTunnelForwarder
 import paramiko
-import time
-import json
+import time, sys
 
 class AutoDLManager:
-    def __init__(self, driver, account, password, cookies_path):
+    def __init__(self, driver, account, password, cookies_path, min_balance=3):
         """
         AutoDL 管理类
         :param driver: 浏览器驱动实例
         :param account: 登录账户
         :param password: 登录密码
         :param cookies_path: Cookies 文件路径
+        :param min_balance: 最低余额要求
         """
         self.driver = driver
         self.account = account
         self.password = password
         self.cookies_path = cookies_path
         self.container_index = 0
+        self.min_balance = min_balance
 
     def login(self):
         """
@@ -31,7 +30,7 @@ class AutoDLManager:
             DriverManager.load_cookies_and_token(self.driver, self.cookies_path)
             self.driver.get("https://www.autodl.com/console/instance/list")
             if self.driver.find_element(By.CLASS_NAME, "user-info").is_displayed():
-                print("AutoDL: 恢复登录状态成功!")
+                print("AutoDL: 恢复登录状态成功")
                 return
         except Exception:
             print("AutoDL: 恢复登录状态失败, 正在重新登录...")
@@ -62,10 +61,26 @@ class AutoDLManager:
         self.driver.get("https://www.autodl.com/console/instance/list")
         DriverManager.save_cookies_and_token(self.driver, self.cookies_path)
 
+    def _check_balance(self):
+        """
+        检查 AutoDL 账户余额
+        """
+        self.driver.get("https://www.autodl.com/console/homepage/personal")
+        time.sleep(2)
+        balance_element = self.driver.find_element(By.CLASS_NAME, "num-bold")
+        balance = float(balance_element.text)
+        print(f"当前账户余额: ￥{balance}")
+        return balance
+    
     def start_server(self):
         """
         启动 AutoDL 服务器
         """
+        balance = self._check_balance()
+        if balance < self.min_balance:
+            print(f"余额不足（小于￥{self.min_balance}），无法启动服务器")
+            sys.exit()
+        
         self.driver.get("https://www.autodl.com/console/instance/list")
         gpu_status = self.driver.find_elements(By.CLASS_NAME, "gpuTips")
         boot_buttons = self.driver.find_elements(
@@ -177,6 +192,6 @@ class AutoDLManager:
 
         try:
             self.driver.get("http://127.0.0.1:6006/v1/models")
-            print("SSH 连接已建立，端口转发成功。")
+            print("SSH 连接已建立，端口转发成功")
         except Exception as e:
             raise Exception(f"测试连接失败: {str(e)}")

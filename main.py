@@ -49,7 +49,7 @@ def main():
             lightnovel_driver, lightnovel_account, lightnovel_password, lightnovel_cookies_path
         )
         autodl_manager = AutoDLManager(
-            autodl_driver, autodl_account, autodl_password, autodl_cookies_path
+            autodl_driver, autodl_account, autodl_password, autodl_cookies_path, min_balance=2.5
         )
 
         # 执行任务
@@ -79,8 +79,6 @@ def main():
                 traceback.print_exc()
             else:
                 print("\n⚠服务器关机错误! ")
-        
-        print('--- LOG END ---')
         sys.exit()
 
 if __name__ == "__main__":

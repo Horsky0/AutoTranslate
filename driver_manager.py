@@ -84,4 +84,4 @@ class DriverManager:
             for key, value in data["session_storage"].items():
                 driver.execute_script(f"sessionStorage.setItem('{key}', '{value}');")
         driver.refresh()
-        print("会话数据加载完成！")
+        print("会话数据加载完成")
