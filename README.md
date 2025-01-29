@@ -6,7 +6,7 @@
 
 - 自动登录 [AutoDL](www.autodl.com) ，检查账户余额，启动/关闭服务器，设置 SSH 隧道并启动远程命令。
 - 自动登录[轻小说机翻网站](https://books.fishhawk.top)，获取需要翻译的书目列表，执行翻译任务并监控翻译进度。
-- 使用 [PushPlus](www.pushplus.plus) 推送消息通知，支持错误提醒和任务完成通知。
+- 使用[PushPlus](www.pushplus.plus)推送消息通知，支持错误提醒和任务完成通知。
 
 ## 快速开始
 
