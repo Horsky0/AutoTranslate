@@ -1,7 +1,6 @@
 from selenium.webdriver.common.by import By
 from driver_manager import DriverManager
 import time
-import sys
 
 class LightNovelManager:
     def __init__(self, driver, account, password, cookies_path):

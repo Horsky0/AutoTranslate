@@ -1,7 +1,7 @@
 from selenium.webdriver.common.by import By
 from sshtunnel import SSHTunnelForwarder
 import paramiko
-import time, sys
+import time
 
 class AutoDLManager:
     def __init__(self, driver, account, password, cookies_path, min_balance=3):
