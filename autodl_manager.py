@@ -39,21 +39,21 @@ class AutoDLManager:
         self.driver.get("https://www.autodl.com/login")
         account_input = self.driver.find_element(
             By.XPATH,
-            "/html/body/div[1]/div[2]/div[3]/div/div[2]/div[1]/form/div[2]/div/div[1]/input",
+            "//input[@placeholder='请输入手机号']",
         )
         account_input.clear()
         account_input.send_keys(self.account)
 
         password_input = self.driver.find_element(
             By.XPATH,
-            "/html/body/div[1]/div[2]/div[3]/div/div[2]/div[1]/form/div[3]/div/div/input",
+            "//input[@placeholder='请输入密码']",
         )
         password_input.clear()
         password_input.send_keys(self.password)
 
         login_button = self.driver.find_element(
-            By.XPATH,
-            "/html/body/div[1]/div[2]/div[3]/div/div[2]/div[1]/button[1]",
+            By.CSS_SELECTOR,
+            ".el-button.el-button--primary.el-button--large",
         )
         login_button.click()
         time.sleep(1)
