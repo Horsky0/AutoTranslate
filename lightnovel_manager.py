@@ -1,21 +1,25 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from driver_manager import DriverManager
 import time
 
 class LightNovelManager:
-    def __init__(self, driver, account, password, cookies_path):
+    def __init__(self, driver, account, password, cookies_path, timeout=30):
         """
         轻小说翻译机器人管理类
         :param driver: 浏览器驱动实例
         :param account: 登录账户
         :param password: 登录密码
         :param cookies_path: Cookies 文件路径
+        :param timeout: 页面元素寻找超时/s
         """
         self.driver = driver
         self.account = account
         self.password = password
         self.cookies_path = cookies_path
         self.translate_list = []
+        self.timeout = timeout
 
     def login(self):
         """
@@ -25,7 +29,10 @@ class LightNovelManager:
             self.driver.get("https://books.fishhawk.top/favorite/web")
             DriverManager.load_cookies_and_token(self.driver, self.cookies_path)
             self.driver.get("https://books.fishhawk.top/favorite/web")
-            time.sleep(2)
+            wait = WebDriverWait(self.driver, self.timeout)
+            wait.until(
+                EC.presence_of_element_located((By.CLASS_NAME, "n-list-item"))
+            )
             if self.driver.find_element(By.CLASS_NAME, "n-list-item").is_displayed():
                 print("LightNovel: 恢复登录状态成功")
                 return
@@ -41,7 +48,7 @@ class LightNovelManager:
 
         login_button = self.driver.find_element(By.CLASS_NAME, "__button-131ezvy-lmmp")
         login_button.click()
-        time.sleep(1)
+        time.sleep(0.5)
         self.driver.get("https://books.fishhawk.top/favorite/web")
         DriverManager.save_cookies_and_token(self.driver, self.cookies_path)
 
@@ -50,13 +57,18 @@ class LightNovelManager:
         获取需要翻译的书目
         """
         print("正在获取需要翻译的书目...")
-        time.sleep(2)
+        wait = WebDriverWait(self.driver, self.timeout)
+        wait.until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".n-pagination-item.n-pagination-item--clickable"))
+        )
         num_pages = int(
             self.driver.find_elements(By.CSS_SELECTOR, ".n-pagination-item.n-pagination-item--clickable")[-1].text
         )
         for i in range(num_pages):
             self.driver.get(f"https://books.fishhawk.top/favorite/web?page={i+1}")
-            time.sleep(2)
+            wait.until(
+                EC.presence_of_element_located((By.CLASS_NAME, "n-list-item"))
+            )
             book_list = self.driver.find_elements(By.CLASS_NAME, "n-list-item")
             for book in book_list:
                 translation_info = book.find_element(By.CSS_SELECTOR, ".n-text.__text-131ezvy-d3").text
@@ -83,15 +95,18 @@ class LightNovelManager:
         翻译书目
         """
         print("正在加入翻译列表...")
+        wait = WebDriverWait(self.driver, self.timeout)
         for url in self.translate_list:
             if url:
                 self.driver.get(url)
-                time.sleep(2)
+                wait.until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".__button-131ezvy-lmmd.n-button.n-button--default-type.n-button--medium-type"))
+                )
                 self.driver.find_elements(
                     By.CSS_SELECTOR,
                     value=".__button-131ezvy-lmmd.n-button.n-button--default-type.n-button--medium-type",
                 )[3].click()
-                time.sleep(1)
+                time.sleep(0.5)
 
         print("翻译开始：")
         self.driver.get("https://books.fishhawk.top/workspace/sakura")
@@ -105,17 +120,20 @@ class LightNovelManager:
             By.XPATH,
             value="/html/body/div/div/div/div/div[2]/div/div/div/ul[1]/div/li[2]/div[1]/div[2]/div[2]/div/div[1]/div[1]/div",
         )
-
         while True:
-            logs = log_container.find_elements(By.XPATH, ".//div")
-            current_logs = [log.text.strip() for log in logs if log.text.strip()]
-            if len(current_logs) < len(old_logs):
-                old_logs = []
+            try:
+                logs = log_container.find_elements(By.XPATH, ".//div")
+                current_logs = [log.text.strip() for log in logs if log.text.strip()]
+                if len(current_logs) < len(old_logs):
+                    old_logs = []
 
-            new_logs = [log for log in current_logs if log not in old_logs]
-            for log in new_logs:
-                print("--" + log)
-            old_logs = current_logs
+                new_logs = [log for log in current_logs if log not in old_logs]
+                for log in new_logs:
+                    print("--" + log)
+                old_logs = current_logs
+            except:
+                pass
+            
             time.sleep(0.5)
 
             try:

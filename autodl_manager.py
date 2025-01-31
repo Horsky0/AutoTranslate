@@ -1,10 +1,12 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from sshtunnel import SSHTunnelForwarder
 import paramiko
 import time
 
 class AutoDLManager:
-    def __init__(self, driver, account, password, cookies_path, min_balance=3):
+    def __init__(self, driver, account, password, cookies_path, min_balance=3, timeout=30):
         """
         AutoDL 管理类
         :param driver: 浏览器驱动实例
@@ -12,6 +14,7 @@ class AutoDLManager:
         :param password: 登录密码
         :param cookies_path: Cookies 文件路径
         :param min_balance: 最低余额要求
+        :param timeout: 页面元素寻找超时/s
         """
         self.driver = driver
         self.account = account
@@ -19,6 +22,7 @@ class AutoDLManager:
         self.cookies_path = cookies_path
         self.container_index = 0
         self.min_balance = min_balance
+        self.timeout = timeout
 
     def login(self):
         """
@@ -56,7 +60,7 @@ class AutoDLManager:
             ".el-button.el-button--primary.el-button--large",
         )
         login_button.click()
-        time.sleep(1)
+        time.sleep(0.5)
 
         self.driver.get("https://www.autodl.com/console/instance/list")
         DriverManager.save_cookies_and_token(self.driver, self.cookies_path)
@@ -66,7 +70,11 @@ class AutoDLManager:
         检查 AutoDL 账户余额
         """
         self.driver.get("https://www.autodl.com/console/homepage/personal")
-        time.sleep(2)
+        wait = WebDriverWait(self.driver, self.timeout)
+        wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME, "num-bold"))
+        )
+        time.sleep(1)
         balance_element = self.driver.find_element(By.CLASS_NAME, "num-bold")
         balance = float(balance_element.text)
         print(f"当前账户余额: ￥{balance}")
