@@ -72,6 +72,7 @@ def main():
         
     except Exception as e:
         if DEBUG:
+            builtins.print = original_print
             traceback.print_exc()
         else:
             tb = traceback.extract_tb(e.__traceback__)
@@ -95,6 +96,7 @@ def main():
         
     except Exception as e:
         if DEBUG:
+            builtins.print = original_print
             traceback.print_exc()
         else:
             tb = traceback.extract_tb(e.__traceback__)
@@ -108,6 +110,7 @@ def main():
             pushplus.send_message('程序错误，服务器已自动关机', log_list)
         except Exception as err:
             if DEBUG:
+                builtins.print = original_print
                 traceback.print_exc()
             else:
                 tb = traceback.extract_tb(e.__traceback__)
