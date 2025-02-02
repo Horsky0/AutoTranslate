@@ -119,6 +119,7 @@ class AutoDLManager:
             time.sleep(0.5)
 
         print("服务器已开机")
+        time.sleep(2)
         self._setup_ssh()
 
     def shutdown_server(self):
