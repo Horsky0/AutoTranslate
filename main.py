@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 import builtins
 
-DEBUG = False
+DEBUG = True
 
 LOG_FILE = "data/log.txt"
 
@@ -49,24 +49,32 @@ def main():
         # 创建消息推送
         pushplus=PushPlusNotifier(pushplus_token=pushplus_token)
 
-        # 初始化浏览器驱动
+        # 初始化浏览器驱动并创建两个标签页
+        print('初始化浏览器驱动')
         driver_manager = DriverManager(headless=True)
-        lightnovel_driver = driver_manager.setup()
-        autodl_driver = driver_manager.setup()
+        driver = driver_manager.setup()
+        print('浏览器驱动已创建')
+        driver.execute_script("window.open('about:blank', '_blank');")  # 第二个标签页
 
-        # 创建管理器实例
+        # 创建管理器实例并绑定到对应标签页
+        driver.switch_to.window(driver.window_handles[0])
         lightnovel_manager = LightNovelManager(
-            lightnovel_driver, lightnovel_account, lightnovel_password, lightnovel_cookies_path
+            driver, lightnovel_account, lightnovel_password, lightnovel_cookies_path
         )
+        driver.switch_to.window(driver.window_handles[1])
         autodl_manager = AutoDLManager(
-            autodl_driver, autodl_account, autodl_password, autodl_cookies_path, min_balance=2.5
+            driver, autodl_account, autodl_password, autodl_cookies_path, min_balance=2.5
         )
 
         # 执行任务
+        driver.switch_to.window(driver.window_handles[0])
         lightnovel_manager.login()
-        if lightnovel_manager.get_book_list()=='Exit':
+        result = lightnovel_manager.get_book_list()
+        if result == 'Exit':
             pushplus.send_message('没有需要翻译的书目', log_list)
             sys.exit()
+
+        driver.switch_to.window(driver.window_handles[1])
         autodl_manager.login()
         autodl_manager.check_balance()
         
@@ -86,13 +94,16 @@ def main():
     #-------------------------------------------------------------
     
     try:
+        driver.switch_to.window(driver.window_handles[1])
         autodl_manager.start_server()
+
+        driver.switch_to.window(driver.window_handles[0])
         lightnovel_manager.translate_books()
+
+        driver.switch_to.window(driver.window_handles[1])
         autodl_manager.shutdown_server()
 
-        # 关闭驱动
-        driver_manager.teardown(lightnovel_driver)
-        driver_manager.teardown(autodl_driver)
+        driver_manager.teardown(driver)
         
     except Exception as e:
         if DEBUG:
@@ -100,12 +111,13 @@ def main():
             traceback.print_exc()
         else:
             tb = traceback.extract_tb(e.__traceback__)
-            filename, line_number, func_name, text = tb[-1]  # 获取最后一个错误的位置信息
+            filename, line_number, func_name, text = tb[-1]
             error_message = f"错误信息: {str(e)}，文件: {filename}，行号: {line_number}"
             print(f"服务器开机后错误: [{error_message}]")
 
         # 确保资源释放
         try:
+            driver.switch_to.window(driver.window_handles[1])
             autodl_manager.shutdown_server()
             pushplus.send_message('程序错误，服务器已自动关机', log_list)
         except Exception as err:
