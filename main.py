@@ -51,7 +51,7 @@ def main():
 
         # 初始化浏览器驱动并创建两个标签页
         print('初始化浏览器驱动')
-        driver_manager = DriverManager(headless=True)
+        driver_manager = DriverManager(headless=False)
         driver = driver_manager.setup()
         print('浏览器驱动已创建')
         driver.execute_script("window.open('about:blank', '_blank');")  # 第二个标签页

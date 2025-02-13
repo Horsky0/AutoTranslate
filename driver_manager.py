@@ -26,6 +26,7 @@ class DriverManager:
         options.add_experimental_option('useAutomationExtension', False)
         options.add_experimental_option('excludeSwitches', ['enable-logging','enable-automation'])
         options.add_argument("--disable-notifications")
+        options.add_argument('--windows-size=1920,1080')  # 建议
         edge_driver_path = "C:/Users/86199/edgedriver_win64/msedgedriver.exe"
         service = Service(executable_path=edge_driver_path, log_output="nul")
         driver = webdriver.Edge(options=options, service=service)

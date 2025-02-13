@@ -29,7 +29,7 @@ class AutoDLManager:
         登录 AutoDL 并保存会话数据
         """
         try:
-            self.driver.get("https://www.autodl.com/console/instance/list")
+            # self.driver.get("https://www.autodl.com/console/instance/list")
             from driver_manager import DriverManager
             DriverManager.load_cookies_and_token(self.driver, self.cookies_path)
             self.driver.get("https://www.autodl.com/console/instance/list")
@@ -60,7 +60,7 @@ class AutoDLManager:
             ".el-button.el-button--primary.el-button--large",
         )
         login_button.click()
-        time.sleep(0.5)
+        time.sleep(2)
 
         self.driver.get("https://www.autodl.com/console/instance/list")
         DriverManager.save_cookies_and_token(self.driver, self.cookies_path)
@@ -74,7 +74,7 @@ class AutoDLManager:
         wait.until(
             EC.presence_of_element_located((By.CLASS_NAME, "num-bold"))
         )
-        time.sleep(1)
+        time.sleep(2)
         balance_element = self.driver.find_element(By.CLASS_NAME, "num-bold")
         balance = float(balance_element.text)
         print(f"当前账户余额: ￥{balance}")
@@ -87,6 +87,10 @@ class AutoDLManager:
         启动 AutoDL 服务器
         """
         self.driver.get("https://www.autodl.com/console/instance/list")
+        wait = WebDriverWait(self.driver, self.timeout)
+        wait.until(
+                EC.presence_of_element_located((By.CLASS_NAME, "gpuTips"))
+            )
         gpu_status = self.driver.find_elements(By.CLASS_NAME, "gpuTips")
         boot_buttons = self.driver.find_elements(
             By.CSS_SELECTOR, ".el-button.el-button--text.el-button--small.thirteenSize"
@@ -101,10 +105,13 @@ class AutoDLManager:
         else:
             raise ValueError("未找到GPU充足的服务器")
 
-        time.sleep(1)
+        wait.until(
+                EC.presence_of_element_located((By.XPATH, "//span[@style='color: rgb(51, 51, 51);']"))
+            )
+        time.sleep(0.5)
         assert self.driver.find_element(
             By.XPATH,
-            "/html/body/div[41]/div/div[2]/div[1]/div[2]/div/div/span[1]",
+            "//span[@style='color: rgb(51, 51, 51);']",
         ).text == "确认开机吗？", "开机确认异常"
         confirm_button = self.driver.find_element(
             By.CSS_SELECTOR, ".el-button.el-button--default.el-button--small.el-button--primary"
@@ -126,16 +133,23 @@ class AutoDLManager:
         """
         关闭 AutoDL 服务器
         """
+        wait = WebDriverWait(self.driver, self.timeout)
         self.driver.get("https://www.autodl.com/console/instance/list")
+        wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".el-button.el-button--text.el-button--small.thirteenSize"))
+            )
         shutdown_button = self.driver.find_elements(
             By.CSS_SELECTOR, ".el-button.el-button--text.el-button--small.thirteenSize"
         )[self.container_index * 2]
         shutdown_button.click()
 
-        time.sleep(1)
+        wait.until(
+                EC.presence_of_element_located((By.XPATH, "//span[@style='color: rgb(51, 51, 51);']"))
+            )
+        time.sleep(0.5)
         assert self.driver.find_element(
             By.XPATH,
-            "/html/body/div[41]/div/div[2]/div[1]/div[2]/div/div/span[1]",
+            "//span[@style='color: rgb(51, 51, 51);']",
         ).text == "确认关机吗？", "关机确认异常"
         confirm_button = self.driver.find_element(
             By.CSS_SELECTOR, ".el-button.el-button--default.el-button--small.el-button--primary"

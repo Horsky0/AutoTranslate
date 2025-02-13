@@ -110,22 +110,33 @@ class LightNovelManager:
 
         print("翻译开始：")
         self.driver.get("https://books.fishhawk.top/workspace/sakura")
+        wait.until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".__button-131ezvy-dfltmd.n-button.n-button--default-type.n-button--tiny-type.n-button--secondary"))
+                )
         self.driver.find_elements(
             By.CSS_SELECTOR,
             value=".__button-131ezvy-dfltmd.n-button.n-button--default-type.n-button--tiny-type.n-button--secondary",
         )[1].click()
 
         old_logs = []
-        log_container = self.driver.find_element(
-            By.XPATH,
-            value="/html/body/div/div/div/div/div[2]/div/div/div/ul[1]/div/li[2]/div[1]/div[2]/div[2]/div/div[1]/div[1]/div",
-        )
+        wait.until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".n-scrollbar-content"))
+                )
+        log_container = self.driver.find_elements(
+            By.CSS_SELECTOR,
+            value=".n-scrollbar-content",
+        )[-1]
+        start_time=time.time()
         while True:
             try:
                 logs = log_container.find_elements(By.XPATH, ".//div")
-                current_logs = [log.text.strip() for log in logs if log.text.strip()]
+                current_logs = [log.text.strip() for log in logs if log.text.strip()]                
                 if len(current_logs) < len(old_logs):
                     old_logs = []
+                if len(current_logs) != len(old_logs):
+                    start_time=time.time()
+                if time.time() - start_time > 30:
+                    break
 
                 new_logs = [log for log in current_logs if log not in old_logs]
                 for log in new_logs:
